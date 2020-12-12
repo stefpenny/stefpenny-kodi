@@ -8,8 +8,8 @@
         </dir>
     </extension>
     <extension point="xbmc.addon.metadata">
-        <summary>stefpenny-kodi</summary>
-        <description>stefpenny's stuff</description>
+        <summary>BoardGame Helper</summary>
+        <description>Provide informations about boardgames &amp; tools to access boardgamegeek collection</description>
         <disclaimer></disclaimer>
         <platform>all</platform>
         <assets>
