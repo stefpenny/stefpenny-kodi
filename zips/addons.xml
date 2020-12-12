@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addons>
-<addon id="boardgame.helper" name="BoardGame Helper" version="1.0" provider-name="stefpenny">
+<addon id="boardgame.helper" name="BoardGame Helper" version="1.0.1" provider-name="stefpenny">
     <extension point="xbmc.addon.repository" name="stefpenny-kodi">
         <dir>
             <info compressed="false">https://raw.githubusercontent.com/stefpenny/stefpenny-kodi/master/zips/addons.xml</info>
