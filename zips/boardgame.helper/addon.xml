@@ -1,14 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="boardgame.helper" name="BoardGame Helper" version="1.0.4" provider-name="stefpenny">
+<addon id="boardgame.helper" name="BoardGame Helper" version="1.0.5" provider-name="stefpenny">
     <requires>
         <import addon="xbmc.python" version="2.25.0"/>
     </requires>
-    <extension point="xbmc.addon.repository" name="stefpenny-kodi" library="default.py">
-        <dir>
-            <info compressed="false">https://raw.githubusercontent.com/stefpenny/stefpenny-kodi/master/zips/addons.xml</info>
-            <checksum>https://raw.githubusercontent.com/stefpenny/stefpenny-kodi/master/zips/addons.xml.md5</checksum>
-            <datadir zip="true">https://raw.githubusercontent.com/stefpenny/stefpenny-kodi/master/zips/</datadir>
-        </dir>
+    <extension point="xbmc.python.script" library="default.py">
         <provides>executable</provides>
     </extension>
     <extension point="xbmc.addon.metadata">

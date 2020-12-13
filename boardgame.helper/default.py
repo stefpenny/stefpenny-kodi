@@ -3,12 +3,163 @@
 import xbmc
 import xbmcgui
 import xbmcaddon
+import untangle
+import json
+#import requests
+import time
+import sys
 
 # create a class for your addon, we need this to get info about your addon
 ADDON = xbmcaddon.Addon()
 # get the full path to your addon, decode it to unicode to handle special (non-ascii) characters in the path
 #CWD = ADDON.getAddonInfo('path') # for kodi 19 and up..
 CWD = ADDON.getAddonInfo('path').decode('utf-8')
+
+class Collection:
+    def __init__(self, name):
+        self.name = name
+        self.games = []
+        self.expansions = []
+        self.wish_list = []
+        self.total_owned = 0
+        self.total_wish_list = 0
+        self.total_exp = 0
+
+    def __build_dict(self, p, fp):
+        rank = fp.stats.rating.ranks.rank
+        rank_list = []
+
+        # Handling untangle returning single-element list containing string in dictionary format for ranks
+        for i in range(len(rank)):
+            temp = str(rank[i])
+            arr = temp.split("'")
+            n_index = arr.index("friendlyname")
+            r_index = arr.index("value")
+            rank_list.append(arr[n_index+2])
+            rank_list.append(arr[r_index+2])
+
+        # Handling unpublished games
+        try:
+            pub_year = p.yearpublished.cdata
+        except AttributeError:
+            pub_year = -1
+
+        if fp.stats.rating['value'] == 'N/A':
+            rating = -1
+        else:
+            rating = fp.stats.rating['value']
+
+        _d = {
+            'name': p.name.cdata,
+            'bgg_id': p['objectid'],
+            'year_published': pub_year,
+            'min_players': fp.stats['minplayers'],
+            'max_players': self.__check_none(fp.stats['maxplayers']),
+            'min_play_time': fp.stats['minplaytime'],
+            'max_play_time': self.__check_none(fp.stats['maxplaytime']),
+            'total_owned': fp.stats['numowned'],
+            'rating': rating,
+            'total_ratings': fp.stats.rating.usersrated['value'],
+            'average_rating': fp.stats.rating.average['value'],
+            'bayes_average': fp.stats.rating.bayesaverage['value'],
+            'std_dev': fp.stats.rating.stddev['value'],
+            'rank': rank_list,
+            'own': p.status['own'],
+            'wish_list': p.status['wishlist'],
+            'num_plays': p.numplays.cdata,
+            'msrp': 0,
+            'price': 0,
+            'amzlink': ""
+        }
+
+        return _d
+
+    def __check_none(self, value):
+        if value is None:
+            return -1
+        else:
+            return value
+
+    def __pre_build(self, _obj, _full_obj, _exp):
+        try:
+            for i in range(len(_obj.items)):
+
+                _path = _obj.items.item[i]
+                _full_path = _full_obj.items.item[i]
+
+                _game_dict = self.__build_dict(_path, _full_path)
+
+                if int(_game_dict['own']):
+                    if _exp:
+                        self.expansions.append(_game_dict)
+                        self.total_exp += 1
+                    else:
+                        self.games.append(_game_dict)
+                        self.total_owned += 1
+                elif int(_game_dict['wish_list']):
+                    self.wish_list.append(_game_dict)
+                    self.total_wish_list += 1
+                else:
+                    pass
+        except AttributeError:
+            sys.exit()
+
+    def load(self):
+
+        no_expansion = "&excludessubtype=boardgameexpansion"
+        expansion = "&subtype=boardgameexpansion"
+        full_stats = "&stats=1"
+
+        # Three calls are necessary due to quirks in boardgamegeek.com's API - see bgg xml document tree.txt
+        while True:
+            api_url = str("https://api.geekdo.com/xmlapi2/collection?username=" + self.name)
+            obj_full = untangle.parse(api_url + full_stats)
+            obj_games = untangle.parse(api_url + no_expansion)
+            obj_expansion = untangle.parse(api_url + expansion)
+
+            # test for invalid username
+            try:
+                if obj_full.errors.error:
+                    if __name__ == '__main__':
+                        self.name = input(obj_full.errors.error.message.cdata + ".  Enter User Name: ")
+                    else:
+                        return 1
+
+                    if self.name == 'q':
+                        sys.exit()
+                    elif self.name == '-h':
+                        Collection.usage(True)
+
+                    continue
+            except AttributeError:
+                # if no "error" attribute then there were no errors
+                pass
+
+            # Test for 202 response
+            try:
+                if obj_games.items['totalitems'] == '0':
+                    if __name__ == '__main__':
+                        print("User has no collection data")
+                        self.name = input(".  Enter User Name: ")
+                        continue
+                    else:
+                        return 3
+
+                self.__pre_build(obj_games, obj_full, 0)
+                self.__pre_build(obj_expansion, obj_full, 1)
+            except AttributeError:
+                # 202 Response produces AttributeError -- 202 is common on your first call to a given username in a day
+                if __name__ == '__main__':
+                    time.sleep(3)
+                    continue
+                else:
+                    return 2
+            break
+
+        if not __name__ == '__main__':
+            return 0
+
+    
 
 # add a class to create your xml based window
 class GUI(xbmcgui.WindowXML):
@@ -24,13 +175,16 @@ class GUI(xbmcgui.WindowXML):
         # define a temporary list where we are going to add all the listitems to
         listitems = []
         # this will be the first item in the list. 'my first item' will be the label that is shown in the list
-        listitem1 = xbmcgui.ListItem('my first item')
-        # add this item to our temporary list
-        listitems.append(listitem1)
-        # let's create another item
-        listitem2 = xbmcgui.ListItem('my second item')
-        # and add it to the temporary list as well
-        listitems.append(listitem2)
+
+        my_addon = xbmcaddon.Addon()
+        user_name = my_addon.getSetting('username')
+        table = Collection(user_name)
+        table.load()
+
+        for elt in table.games:
+            listitem3 = xbmcgui.ListItem(elt['name'])
+            listitems.append(listitem3)
+
         # by default the built-in container already contains one item, the 'up' (..) item, let's remove that one
         self.clearList()
         # now we are going to add all the items we have defined to the (built-in) container
@@ -58,3 +212,5 @@ if (__name__ == '__main__'):
     del ui
 
 # the end!
+
+

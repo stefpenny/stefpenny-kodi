@@ -33,7 +33,7 @@
 					<width>960</width>
 					<font>font13</font>
 					<label>$INFO[ListItem.Label]</label>
-					<textcolor>orange</textcolor>
+					<textcolor>blue</textcolor>
 				</control>
 			</focusedlayout>
 		</control>
