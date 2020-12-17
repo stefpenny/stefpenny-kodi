@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="boardgame.helper" name="BoardGame Helper" version="1.0.6" provider-name="stefpenny">
+<addon id="boardgame.helper" name="BoardGame Helper" version="1.0.7" provider-name="stefpenny">
     <requires>
         <import addon="xbmc.python" version="2.25.0"/>
+        <import addon="script.common.plugin.cache" version="2.5.5"/>
+        <import addon="script.module.requests" version="2.22.0"/>
     </requires>
     <extension point="xbmc.python.script" library="default.py">
         <provides>executable</provides>
