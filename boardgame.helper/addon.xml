@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="boardgame.helper" name="BoardGame Helper" version="1.0.5" provider-name="stefpenny">
+<addon id="boardgame.helper" name="BoardGame Helper" version="1.0.6" provider-name="stefpenny">
     <requires>
         <import addon="xbmc.python" version="2.25.0"/>
     </requires>

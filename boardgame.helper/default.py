@@ -8,6 +8,14 @@ import json
 #import requests
 import time
 import sys
+import imagedownload
+
+try:
+   import StorageServer
+except:
+   import storageserverdummy as StorageServer
+
+cache = StorageServer.StorageServer("boardgame.helper", 24) 
 
 # create a class for your addon, we need this to get info about your addon
 ADDON = xbmcaddon.Addon()
@@ -67,6 +75,8 @@ class Collection:
             'own': p.status['own'],
             'wish_list': p.status['wishlist'],
             'num_plays': p.numplays.cdata,
+            'image': p.image,
+            'thumbnail': p.thumbnail,
             'msrp': 0,
             'price': 0,
             'amzlink': ""
@@ -176,14 +186,25 @@ class GUI(xbmcgui.WindowXML):
         listitems = []
         # this will be the first item in the list. 'my first item' will be the label that is shown in the list
 
-        my_addon = xbmcaddon.Addon()
-        user_name = my_addon.getSetting('username')
-        table = Collection(user_name)
-        table.load()
+        cache.table_name = "BGGInfos"
+
+        table = cache.get("collection")
+        if not table:
+            my_addon = xbmcaddon.Addon()
+            user_name = my_addon.getSetting('username')
+            table = Collection(user_name)
+            table.load()
+            cache.set("collection", table)
+
+
 
         for elt in table.games:
             listitem3 = xbmcgui.ListItem(elt['name'])
+            listitem3.setArt({'icon': str(elt['bgg_id'] + '.jpg')})
             listitems.append(listitem3)
+
+
+        imagedownload.download()
 
         # by default the built-in container already contains one item, the 'up' (..) item, let's remove that one
         self.clearList()

@@ -2,15 +2,41 @@
 <window>
 	<views>50</views>
 	<controls>
+		<control type="label" id="1">
+	        <description>My First label</description>
+	        <left>10</left>
+	        <top>10</top>
+	        <width>500</width>
+	        <visible>true</visible>
+	        <align>center</align>
+	        <aligny>center</aligny>
+	        <scroll>false</scroll>
+	        <label fallback="$LOCALIZE[123]">BGG Library</label>
+	        <angle>30</angle>
+	        <haspath>false</haspath>
+	        <font>font14</font>
+	        <textcolor>FFB2D4F5</textcolor>
+	        <shadowcolor>ff000000</shadowcolor>
+	        <wrapmultiline>false</wrapmultiline>
+	        <scrollspeed>50</scrollspeed>
+	        <scrollsuffix> - </scrollsuffix>
+	  </control>
 		<control type="list" id="50">
 			<left>500</left>
-			<top>200</top>
+			<top>100</top>
 			<width>1000</width>
-			<height>500</height>
-			<viewtype label="535">list</viewtype>
-			<itemlayout height="100" width="1000">
+			<height>1000</height>
+			<viewtype label="list">icon</viewtype>
+			<itemlayout height="60" width="1000">
+				<control type="image">
+					<left>5</left>
+					<top>3</top>
+					<width>80</width>
+					<height>80</height>
+					<texture>$INFO[ListItem.Icon]</texture>
+				</control>
 				<control type="label">
-					<left>20</left>
+					<left>100</left>
 					<top>0</top>
 					<height>50</height>
 					<width>960</width>
@@ -18,7 +44,7 @@
 					<label>$INFO[ListItem.Label]</label>
 				</control>
 			</itemlayout>
-			<focusedlayout height="100" width="1000">
+			<focusedlayout height="60" width="1000">
 				<control type="image">
 					<left>0</left>
 					<top>0</top>
