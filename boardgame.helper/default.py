@@ -3,12 +3,11 @@
 import xbmc
 import xbmcgui
 import xbmcaddon
-import untangle
 import json
-#import requests
 import time
 import sys
 import imagedownload
+import collection
 
 try:
    import StorageServer
@@ -22,198 +21,226 @@ ADDON = xbmcaddon.Addon()
 # get the full path to your addon, decode it to unicode to handle special (non-ascii) characters in the path
 #CWD = ADDON.getAddonInfo('path') # for kodi 19 and up..
 CWD = ADDON.getAddonInfo('path').decode('utf-8')
-
-class Collection:
-    def __init__(self, name):
-        self.name = name
-        self.games = []
-        self.expansions = []
-        self.wish_list = []
-        self.total_owned = 0
-        self.total_wish_list = 0
-        self.total_exp = 0
-
-    def __build_dict(self, p, fp):
-        rank = fp.stats.rating.ranks.rank
-        rank_list = []
-
-        # Handling untangle returning single-element list containing string in dictionary format for ranks
-        for i in range(len(rank)):
-            temp = str(rank[i])
-            arr = temp.split("'")
-            n_index = arr.index("friendlyname")
-            r_index = arr.index("value")
-            rank_list.append(arr[n_index+2])
-            rank_list.append(arr[r_index+2])
-
-        # Handling unpublished games
-        try:
-            pub_year = p.yearpublished.cdata
-        except AttributeError:
-            pub_year = -1
-
-        if fp.stats.rating['value'] == 'N/A':
-            rating = -1
-        else:
-            rating = fp.stats.rating['value']
-
-        _d = {
-            'name': p.name.cdata,
-            'bgg_id': p['objectid'],
-            'year_published': pub_year,
-            'min_players': fp.stats['minplayers'],
-            'max_players': self.__check_none(fp.stats['maxplayers']),
-            'min_play_time': fp.stats['minplaytime'],
-            'max_play_time': self.__check_none(fp.stats['maxplaytime']),
-            'total_owned': fp.stats['numowned'],
-            'rating': rating,
-            'total_ratings': fp.stats.rating.usersrated['value'],
-            'average_rating': fp.stats.rating.average['value'],
-            'bayes_average': fp.stats.rating.bayesaverage['value'],
-            'std_dev': fp.stats.rating.stddev['value'],
-            'rank': rank_list,
-            'own': p.status['own'],
-            'wish_list': p.status['wishlist'],
-            'num_plays': p.numplays.cdata,
-            'image': p.image,
-            'thumbnail': p.thumbnail,
-            'msrp': 0,
-            'price': 0,
-            'amzlink': ""
-        }
-
-        return _d
-
-    def __check_none(self, value):
-        if value is None:
-            return -1
-        else:
-            return value
-
-    def __pre_build(self, _obj, _full_obj, _exp):
-        try:
-            for i in range(len(_obj.items)):
-
-                _path = _obj.items.item[i]
-                _full_path = _full_obj.items.item[i]
-
-                _game_dict = self.__build_dict(_path, _full_path)
-
-                if int(_game_dict['own']):
-                    if _exp:
-                        self.expansions.append(_game_dict)
-                        self.total_exp += 1
-                    else:
-                        self.games.append(_game_dict)
-                        self.total_owned += 1
-                elif int(_game_dict['wish_list']):
-                    self.wish_list.append(_game_dict)
-                    self.total_wish_list += 1
-                else:
-                    pass
-        except AttributeError:
-            sys.exit()
-
-    def load(self):
-
-        no_expansion = "&excludessubtype=boardgameexpansion"
-        expansion = "&subtype=boardgameexpansion"
-        full_stats = "&stats=1"
-
-        # Three calls are necessary due to quirks in boardgamegeek.com's API - see bgg xml document tree.txt
-        while True:
-            api_url = str("https://api.geekdo.com/xmlapi2/collection?username=" + self.name)
-            obj_full = untangle.parse(api_url + full_stats)
-            obj_games = untangle.parse(api_url + no_expansion)
-            obj_expansion = untangle.parse(api_url + expansion)
-
-            # test for invalid username
-            try:
-                if obj_full.errors.error:
-                    if __name__ == '__main__':
-                        self.name = input(obj_full.errors.error.message.cdata + ".  Enter User Name: ")
-                    else:
-                        return 1
-
-                    if self.name == 'q':
-                        sys.exit()
-                    elif self.name == '-h':
-                        Collection.usage(True)
-
-                    continue
-            except AttributeError:
-                # if no "error" attribute then there were no errors
-                pass
-
-            # Test for 202 response
-            try:
-                if obj_games.items['totalitems'] == '0':
-                    if __name__ == '__main__':
-                        print("User has no collection data")
-                        self.name = input(".  Enter User Name: ")
-                        continue
-                    else:
-                        return 3
-
-                self.__pre_build(obj_games, obj_full, 0)
-                self.__pre_build(obj_expansion, obj_full, 1)
-            except AttributeError:
-                # 202 Response produces AttributeError -- 202 is common on your first call to a given username in a day
-                if __name__ == '__main__':
-                    time.sleep(3)
-                    continue
-                else:
-                    return 2
-            break
-
-        if not __name__ == '__main__':
-            return 0
-
-    
+__profile__ = xbmc.translatePath( ADDON.getAddonInfo('profile') ).decode("utf-8")
 
 # add a class to create your xml based window
 class GUI(xbmcgui.WindowXML):
-    # [optional] this function is only needed of you are passing optional data to your window
+
     def __init__(self, *args, **kwargs):
         # get the optional data and add it to a variable you can use elsewhere in your script
         self.data = kwargs['optional1']
+        self.table = []
+        self.curFilter = 0
+        self.curSort = 0
+
+    def onClick(self, control):
+        if control == 3001:
+            dialog = xbmcgui.Dialog()
+            entries = ["By Name (ASC)", "By Name (DESC)", "By Year published (ASC)", "By Year published (DESC)", "By Type (ASC)", "By Type (DESC)"]
+            nr = dialog.select("Sort Games", entries)
+            if nr>=0:
+                entry = entries[nr]
+                if entry == "By Name (ASC)":
+                    self.curSort = 0
+                elif entry == "By Name (DESC)":
+                    self.curSort = 1
+                elif entry == "By Year published (ASC)":
+                    self.curSort = 2
+                elif entry == "By Year published (DESC)":
+                    self.curSort = 3
+                elif entry == "By Type (ASC)":
+                    self.curSort = 4
+                elif entry == "By Type (DESC)":
+                    self.curSort = 5
+                    
+                self.clearList()                
+                listitems = self.build_list(self.curFilter, self.curSort)
+                self.addItems(listitems)
+
+        if control == 3002:
+            dialog = xbmcgui.Dialog()
+            entries = ["Show All Owned", "Show Base Games", "Show Expansions", "Show WishList"]
+            nr = dialog.select("Filter Games", entries)
+            if nr>=0:
+                entry = entries[nr]
+                if entry == "Show All Owned":
+                    self.curFilter = 0
+                elif entry == "Show Base Games":
+                    self.curFilter = 1
+                elif entry == "Show Expansions":
+                    self.curFilter = 2
+                elif entry == "Show WishList":
+                    self.curFilter = 3
+
+                self.clearList()
+                listitems = self.build_list(self.curFilter, self.curSort)
+                self.addItems(listitems)
+
+    def build_list(self, mode, sort):
+        listitems = []
+        i = 1
+
+        full_list = []
+        if mode == 0:
+            for elt in self.table.games:
+                full_list.append(elt)
+            for elt in self.table.expansions:
+                full_list.append(elt)
+        elif mode == 1:
+            for elt in self.table.games:
+                full_list.append(elt)
+        elif mode == 2:
+            for elt in self.table.expansions:
+                full_list.append(elt)
+        elif mode == 3:
+            for elt in self.table.wish_list:
+                full_list.append(elt)
+
+        if sort == 0:
+            full_list.sort(key=lambda x: x.get('name'))        
+        elif sort == 1:
+            full_list.sort(key=lambda x: x.get('name'), reverse=True)        
+        elif sort == 2:
+            full_list.sort(key=lambda x: x.get('year_published'))        
+        elif sort == 3:
+            full_list.sort(key=lambda x: x.get('year_published'), reverse=True)        
+        elif sort == 4:
+            full_list.sort(key=lambda x: x.get('subtype'))        
+        elif sort == 5:
+            full_list.sort(key=lambda x: x.get('subtype'), reverse=True)        
+
+
+        for elt in full_list:
+            file_name = elt['thumbnail'].cdata.split('/')[-1]
+            file_ext = file_name.split('.')[-1]
+
+            listitem = xbmcgui.ListItem(elt['name'] + ' (' + str(elt['year_published']) + ')')
+            listitem.setArt({ 'icon': str(__profile__ + 'imgCache\\' + str(elt['bgg_id'] + '.' + file_ext))  })
+
+            #Item properties
+            listitem.setProperty('RatingValue', str(elt['rating']))
+
+            RankValue = 'RANK: '
+            for rank in elt['rank']:
+                if rank == 'Not Ranked':
+                    RankValue = RankValue + '-- '
+                elif rank == 'Board Game Rank':
+                    RankValue = RankValue + 'Overall '
+                else:
+                    RankValue = RankValue + rank.replace('Rank', '') + ' '
+
+            if elt['subtype'] == 'boardgameexpansion':
+                TypeValue = 'Expansion'
+            elif elt['subtype'] == 'boardgame':
+                TypeValue = 'Boardgame'
+
+            if elt['min_players'] == elt['max_players'] or elt['max_players'] == -1:
+                NumPlayers = str(elt['min_players']) + ' Players'
+            else:
+                NumPlayers = str(elt['min_players']) + '-' + str(elt['max_players']) + ' Players'
+
+            if elt['min_play_time'] == -1 and elt['max_play_time'] == -1:
+                PlayingTime = '-- Min'
+            elif elt['max_play_time'] == -1:
+                PlayingTime = str(elt['min_play_time']) + ' Min'
+            else:
+                PlayingTime = str(elt['min_play_time']) + '-' + str(elt['max_play_time']) + ' Min'
+
+            listitem.setProperty('RankValue', RankValue)
+            listitem.setProperty('TypeValue', TypeValue)
+            listitem.setProperty('NumPlayers', NumPlayers)
+            listitem.setProperty('PlayingTime', PlayingTime)
+
+            listitems.append(listitem)   
+
+        return listitems 
 
     # until now we have a blank window, the onInit function will parse your xml file
     def onInit(self):
-        # select a view mode, '50' in our case, as defined in the skin file
+
+        self.setProperty('WinWidth', str(self.getWidth()))
+        self.setProperty('RatingIcon', 'rating.png')
+        self.setProperty('RankIcon', 'star-icon.png')
+        self.setProperty('TypeIcon', 'genius-icon.png')
+        self.setProperty('LineSepV', 'linev.png')
+        self.setProperty('LineSepH', 'lineh.png')
+        self.setProperty('TestValue', 'Hello')
+
         xbmc.executebuiltin('Container.SetViewMode(50)')
-        # define a temporary list where we are going to add all the listitems to
-        listitems = []
-        # this will be the first item in the list. 'my first item' will be the label that is shown in the list
+        my_addon = xbmcaddon.Addon()
+        user_name = my_addon.getSetting('username')
+
+        progress = xbmcgui.DialogProgress()
+        progress.create('Refreshing database for user \"' + user_name + '\"')
+        progress.update(0)
 
         cache.table_name = "BGGInfos"
 
-        table = cache.get("collection")
-        if not table:
-            my_addon = xbmcaddon.Addon()
-            user_name = my_addon.getSetting('username')
-            table = Collection(user_name)
-            table.load()
-            cache.set("collection", table)
+        #table = cache.get("collection")
+        #if not table:            
+        
+        self.table = collection.Collection(user_name)
+        self.table.load()
 
+        #cache.set("collection", table)
 
+        self.setProperty('CollectionStats', user_name + '\'s collection: ' + str(self.table.total_owned) + ' Boardgames / ' + str(self.table.total_exp) + ' Expansions')
 
-        for elt in table.games:
-            listitem3 = xbmcgui.ListItem(elt['name'])
-            listitem3.setArt({'icon': str(elt['bgg_id'] + '.jpg')})
-            listitems.append(listitem3)
+        i = 1
+        for elt in self.table.games:
+            
+            imagedownload.download(__profile__ + 'imgCache\\', str(elt['image'].cdata), str(elt['bgg_id']))
+            imagedownload.download(__profile__ + 'imgCache\\', str(elt['thumbnail'].cdata), str(elt['bgg_id']) + '_tn')
 
+            progress.update(100 * i / (self.table.total_owned + self.table.total_wish_list), line1 = 'Game ' + str(i) + ' of ' + str(self.table.total_owned + self.table.total_wish_list), line2 = elt['name'])
+            i = i + 1
 
-        imagedownload.download()
+            if (progress.iscanceled()):
+                break
+
+        for elt in self.table.expansions:
+            
+            imagedownload.download(__profile__ + 'imgCache\\', str(elt['image'].cdata), str(elt['bgg_id']))
+            imagedownload.download(__profile__ + 'imgCache\\', str(elt['thumbnail'].cdata), str(elt['bgg_id']) + '_tn')
+
+            progress.update(100 * i / (self.table.total_owned + self.table.total_wish_list), line1 = 'Game ' + str(i) + ' of ' + str(self.table.total_owned + self.table.total_wish_list), line2 = elt['name'])
+            i = i + 1
+
+            if (progress.iscanceled()):
+                break
+
+        for elt in self.table.wish_list:
+            
+            imagedownload.download(__profile__ + 'imgCache\\', str(elt['image'].cdata), str(elt['bgg_id']))
+            imagedownload.download(__profile__ + 'imgCache\\', str(elt['thumbnail'].cdata), str(elt['bgg_id']) + '_tn')
+
+            progress.update(100 * i / (self.table.total_owned + self.table.total_wish_list), line1 = 'Game ' + str(i) + ' of ' + str(self.table.total_owned + self.table.total_wish_list), line2 = elt['name'])
+            i = i + 1
+
+            if (progress.iscanceled()):
+                break
+
+        progress.update(100)
+        progress.close()
+
+        listitems = self.build_list(self.curFilter, self.curSort)
 
         # by default the built-in container already contains one item, the 'up' (..) item, let's remove that one
         self.clearList()
         # now we are going to add all the items we have defined to the (built-in) container
         self.addItems(listitems)
+
+        self.button0 = xbmcgui.ControlButton(1500, 5, 270, 30, 'Sort Games')
+        self.addControl(self.button0)
+
+        self.button1 = xbmcgui.ControlButton(1000, 5, 270, 30, 'Filter Games')
+        self.addControl(self.button1)
+
         # give kodi a bit of (processing) time to add all items to the container
         xbmc.sleep(100)
         # this puts the focus on the top item of the container
         self.setFocusId(self.getCurrentContainerId())
+        
 
 # this is the entry point of your addon, execution of your script will start here
 if (__name__ == '__main__'):
