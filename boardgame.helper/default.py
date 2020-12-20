@@ -9,18 +9,10 @@ import sys
 import imagedownload
 import collection
 import os
-
-try:
-    import StorageServer
-except:
-    import storageserverdummy as StorageServer
-
-cache = StorageServer.StorageServer("boardgame.helper", 24)
+import gamedetail
 
 # create a class for your addon, we need this to get info about your addon
 ADDON = xbmcaddon.Addon()
-# get the full path to your addon, decode it to unicode to handle special (non-ascii) characters in the path
-# CWD = ADDON.getAddonInfo('path') # for kodi 19 and up..
 CWD = ADDON.getAddonInfo('path').decode('utf-8')
 __profile__ = xbmc.translatePath(ADDON.getAddonInfo('profile')).decode("utf-8")
 
@@ -29,17 +21,61 @@ __profile__ = xbmc.translatePath(ADDON.getAddonInfo('profile')).decode("utf-8")
 class GUI(xbmcgui.WindowXML):
 
     def __init__(self, *args, **kwargs):
-        # get the optional data and add it to a variable you can use elsewhere in your script
+        self.mediapath = os.path.join(CWD, 'resources', 'skins', 'Default', 'media')
+        self.videobutton = xbmcgui.ControlButton(900, 30, 270, 50, 'Video', alignment=2
+                                                 , focusTexture=os.path.join(self.mediapath, 'buttonhover.png')
+                                                 , noFocusTexture=os.path.join(self.mediapath, 'button.png'))
+        self.FilterButton = xbmcgui.ControlButton(1200, 30, 270, 50, 'Filter Games', alignment=2
+                                                  , focusTexture=os.path.join(self.mediapath, 'buttonhover.png')
+                                                  , noFocusTexture=os.path.join(self.mediapath, 'button.png'))
+        self.SortButton = xbmcgui.ControlButton(1500, 30, 270, 50, 'Sort Games', alignment=2
+                                                , focusTexture=os.path.join(self.mediapath, 'buttonhover.png')
+                                                , noFocusTexture=os.path.join(self.mediapath, 'button.png'))
         self.data = kwargs['optional1']
         self.table = []
         self.curFilter = 0
         self.curSort = 0
-        self.mediapath = os.path.join(CWD, 'resources', 'skins', 'Default', 'media')
+        self.CurIndex = 0
+        self.full_list = []
+        self.firstInit = True
+
+    def MoveIndex(self, Direction):
+        if Direction == 1:
+            if self.CurIndex == (len(self.full_list) - 1):
+                self.CurIndex = 0
+            else:
+                self.CurIndex = self.CurIndex + 1
+        elif Direction == -1:
+            if self.CurIndex > 0:
+                self.CurIndex = self.CurIndex - 1
+            else:
+                self.CurIndex = (len(self.full_list) - 1)
+
+        self.setProperty('TestValue', str(self.CurIndex))
+
+    def onAction(self, action):
+        if action.getId() == 10:
+            self.close()
+        try:
+            curctl = self.getFocus()
+            if curctl.getId() == 50 and action.getId() == 3:
+                self.MoveIndex(-1)
+
+            elif curctl.getId() == 50 and action.getId() == 4:
+                self.MoveIndex(1)
+                if self.CurIndex == 180:
+                    curctl.selectItem(4)
+                    self.CurIndex = 4
+
+            elif curctl.getId() == 50 and action.getId() == 7:
+                game_id = self.full_list[self.CurIndex]['bgg_id']
+                newWin = gamedetail.GameDetail('gamedetail.xml', CWD, 'default', '1080i', True, gameid=game_id)
+                newWin.doModal()
+                del newWin
+        finally:
+            return
 
     def onClick(self, control):
-        if control == 50:
-            curctl = self.getFocus()
-            listitem = curctl.getListItem(1)
 
         if control == self.SortButton.getId():
             dialog = xbmcgui.Dialog()
@@ -64,6 +100,9 @@ class GUI(xbmcgui.WindowXML):
                 self.clearList()
                 listitems = self.build_list(self.curFilter, self.curSort)
                 self.addItems(listitems)
+                self.CurIndex = 0
+                self.setFocusId(50)
+                self.getControl(50).selectItem(self.CurIndex)
 
         if control == self.FilterButton.getId():
             dialog = xbmcgui.Dialog()
@@ -83,41 +122,47 @@ class GUI(xbmcgui.WindowXML):
                 self.clearList()
                 listitems = self.build_list(self.curFilter, self.curSort)
                 self.addItems(listitems)
+                self.CurIndex = 0
+                self.setFocusId(50)
+                self.getControl(50).selectItem(self.CurIndex)
+
+        if control == self.videobutton.getId():
+            xbmc.executebuiltin("RunPlugin(plugin://plugin.video.youtube/play/?video_id=GYyNQVxofc8&incognito=true)")
 
     def build_list(self, mode, sort):
         listitems = []
         i = 1
 
-        full_list = []
+        self.full_list = []
         if mode == 0:
             for elt in self.table.games:
-                full_list.append(elt)
+                self.full_list.append(elt)
             for elt in self.table.expansions:
-                full_list.append(elt)
+                self.full_list.append(elt)
         elif mode == 1:
             for elt in self.table.games:
-                full_list.append(elt)
+                self.full_list.append(elt)
         elif mode == 2:
             for elt in self.table.expansions:
-                full_list.append(elt)
+                self.full_list.append(elt)
         elif mode == 3:
             for elt in self.table.wish_list:
-                full_list.append(elt)
+                self.full_list.append(elt)
 
         if sort == 0:
-            full_list.sort(key=lambda x: x.get('name'))
+            self.full_list.sort(key=lambda x: x.get('name'))
         elif sort == 1:
-            full_list.sort(key=lambda x: x.get('name'), reverse=True)
+            self.full_list.sort(key=lambda x: x.get('name'), reverse=True)
         elif sort == 2:
-            full_list.sort(key=lambda x: x.get('year_published'))
+            self.full_list.sort(key=lambda x: x.get('year_published'))
         elif sort == 3:
-            full_list.sort(key=lambda x: x.get('year_published'), reverse=True)
+            self.full_list.sort(key=lambda x: x.get('year_published'), reverse=True)
         elif sort == 4:
-            full_list.sort(key=lambda x: x.get('subtype'))
+            self.full_list.sort(key=lambda x: x.get('subtype'))
         elif sort == 5:
-            full_list.sort(key=lambda x: x.get('subtype'), reverse=True)
+            self.full_list.sort(key=lambda x: x.get('subtype'), reverse=True)
 
-        for elt in full_list:
+        for elt in self.full_list:
             file_name = elt['thumbnail'].cdata.split('/')[-1]
             file_ext = file_name.split('.')[-1]
 
@@ -166,6 +211,7 @@ class GUI(xbmcgui.WindowXML):
         # until now we have a blank window, the onInit function will parse your xml file
 
     def onInit(self):
+        my_addon = xbmcaddon.Addon()
 
         self.setProperty('WinWidth', str(self.getWidth()))
         self.setProperty('RatingIcon', 'rating.png')
@@ -176,100 +222,95 @@ class GUI(xbmcgui.WindowXML):
         self.setProperty('TestValue', __profile__)
 
         xbmc.executebuiltin('Container.SetViewMode(50)')
-        my_addon = xbmcaddon.Addon()
         user_name = my_addon.getSetting('username')
 
-        progress = xbmcgui.DialogProgress()
-        progress.create('Refreshing database for user \"' + user_name + '\"')
-        progress.update(0)
+        if self.firstInit == True:
+            self.curSort = int(my_addon.getSetting('default_sort'))
+            self.curFilter = int(my_addon.getSetting('default_filter'))
+            self.table = collection.Collection(user_name)
+            self.table.load()
 
-        cache.table_name = "BGGInfos"
+            if my_addon.getSetting('refresh') == 'true':
+                progress = xbmcgui.DialogProgress()
+                progress.create('Refreshing database for user \"' + user_name + '\"')
+                progress.update(0)
 
-        # table = cache.get("collection")
-        # if not table:
+                total_games = int(self.table.total_owned) + int(self.table.total_exp) + int(self.table.total_wish_list)
+                i = 1
+                for elt in self.table.games:
 
-        self.table = collection.Collection(user_name)
-        self.table.load()
+                    imagedownload.download(__profile__ + 'imgCache\\', str(elt['image'].cdata), str(elt['bgg_id']))
+                    imagedownload.download(__profile__ + 'imgCache\\', str(elt['thumbnail'].cdata),
+                                           str(elt['bgg_id']) + '_tn')
 
-        # cache.set("collection", table)
+                    progress.update(100 * i / total_games,
+                                    line1='Game ' + str(i) + ' of ' + str(total_games),
+                                    line2=elt['name'])
+                    i = i + 1
 
-        self.setProperty('CollectionStats',
-                         user_name + '\'s collection: ' + str(self.table.total_owned) + ' Boardgames / ' + str(
-                             self.table.total_exp) + ' Expansions')
+                    if progress.iscanceled():
+                        break
 
-        i = 1
-        for elt in self.table.games:
+                for elt in self.table.expansions:
 
-            imagedownload.download(__profile__ + 'imgCache\\', str(elt['image'].cdata), str(elt['bgg_id']))
-            imagedownload.download(__profile__ + 'imgCache\\', str(elt['thumbnail'].cdata), str(elt['bgg_id']) + '_tn')
+                    imagedownload.download(__profile__ + 'imgCache\\', str(elt['image'].cdata), str(elt['bgg_id']))
+                    imagedownload.download(__profile__ + 'imgCache\\', str(elt['thumbnail'].cdata),
+                                           str(elt['bgg_id']) + '_tn')
 
-            progress.update(100 * i / (self.table.total_owned + self.table.total_wish_list),
-                            line1='Game ' + str(i) + ' of ' + str(self.table.total_owned + self.table.total_wish_list),
-                            line2=elt['name'])
-            i = i + 1
+                    progress.update(100 * i / total_games,
+                                    line1='Game ' + str(i) + ' of ' + str(total_games),
+                                    line2=elt['name'])
+                    i = i + 1
 
-            if progress.iscanceled():
-                break
+                    if progress.iscanceled():
+                        break
 
-        for elt in self.table.expansions:
+                for elt in self.table.wish_list:
 
-            imagedownload.download(__profile__ + 'imgCache\\', str(elt['image'].cdata), str(elt['bgg_id']))
-            imagedownload.download(__profile__ + 'imgCache\\', str(elt['thumbnail'].cdata), str(elt['bgg_id']) + '_tn')
+                    imagedownload.download(__profile__ + 'imgCache\\', str(elt['image'].cdata), str(elt['bgg_id']))
+                    imagedownload.download(__profile__ + 'imgCache\\', str(elt['thumbnail'].cdata),
+                                           str(elt['bgg_id']) + '_tn')
 
-            progress.update(100 * i / (self.table.total_owned + self.table.total_wish_list),
-                            line1='Game ' + str(i) + ' of ' + str(self.table.total_owned + self.table.total_wish_list),
-                            line2=elt['name'])
-            i = i + 1
+                    progress.update(100 * i / total_games,
+                                    line1='Game ' + str(i) + ' of ' + str(total_games),
+                                    line2=elt['name'])
+                    i = i + 1
 
-            if progress.iscanceled():
-                break
+                    if progress.iscanceled():
+                        break
 
-        for elt in self.table.wish_list:
+                progress.update(100)
+                progress.close()
 
-            imagedownload.download(__profile__ + 'imgCache\\', str(elt['image'].cdata), str(elt['bgg_id']))
-            imagedownload.download(__profile__ + 'imgCache\\', str(elt['thumbnail'].cdata), str(elt['bgg_id']) + '_tn')
+            self.addControl(self.SortButton)
+            self.addControl(self.FilterButton)
+            self.addControl(self.videobutton)
 
-            progress.update(100 * i / (self.table.total_owned + self.table.total_wish_list),
-                            line1='Game ' + str(i) + ' of ' + str(self.table.total_owned + self.table.total_wish_list),
-                            line2=elt['name'])
-            i = i + 1
+            # Navigation between controls
+            self.SortButton.controlRight(self.FilterButton)
+            self.SortButton.controlLeft(self.FilterButton)
+            self.FilterButton.controlRight(self.SortButton)
+            self.FilterButton.controlLeft(self.SortButton)
+            self.SortButton.controlDown(self.getControl(50))
+            self.FilterButton.controlDown(self.getControl(50))
+            self.getControl(50).controlLeft(self.FilterButton)
+            self.getControl(50).controlRight(self.SortButton)
 
-            if progress.iscanceled():
-                break
-
-        progress.update(100)
-        progress.close()
+            self.setProperty('CollectionStats', user_name + '\'s collection: ' + str(self.table.total_owned)
+                             + ' Boardgames / ' + str(self.table.total_exp) + ' Expansions')
 
         listitems = self.build_list(self.curFilter, self.curSort)
 
         self.clearList()
         self.addItems(listitems)
 
-        self.SortButton = xbmcgui.ControlButton(1500, 10, 270, 50, 'Sort Games', alignment=2
-                                                , focusTexture=os.path.join(self.mediapath, 'buttonhover.png')
-                                                , noFocusTexture=os.path.join(self.mediapath, 'button.png'))
-        self.addControl(self.SortButton)
-
-        self.FilterButton = xbmcgui.ControlButton(1200, 10, 270, 50, 'Filter Games', alignment=2
-                                                , focusTexture=os.path.join(self.mediapath, 'buttonhover.png')
-                                                , noFocusTexture=os.path.join(self.mediapath, 'button.png'))
-        self.addControl(self.FilterButton)
-
-        # Navigation between controls
-        self.SortButton.controlRight(self.FilterButton)
-        self.SortButton.controlLeft(self.FilterButton)
-        self.FilterButton.controlRight(self.SortButton)
-        self.FilterButton.controlLeft(self.SortButton)
-
-        self.SortButton.controlDown(self.getControl(50))
-        self.FilterButton.controlDown(self.getControl(50))
-
-        self.getControl(50).controlLeft(self.FilterButton)
-        self.getControl(50).controlRight(self.SortButton)
-
         xbmc.sleep(100)
-        # this puts the focus on the top item of the container
-        self.setFocusId(self.getCurrentContainerId())
+
+        self.setFocusId(50)
+        self.getControl(50).selectItem(self.CurIndex)
+
+        # Window Already Initialized
+        self.firstInit = False
 
 
 if __name__ == '__main__':

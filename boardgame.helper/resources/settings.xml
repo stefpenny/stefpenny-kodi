@@ -2,5 +2,8 @@
 <settings>
     <category label="32001">
         <setting label="32002" type="text"   id="username" default=""/>
+        <setting label="32003" type="bool"   id="refresh" default=""/>
+        <setting id="default_sort" type="select" label="32004" lvalues="32005|32006|32007|32008|32009|32010" />
+        <setting id="default_filter" type="select" label="32011" lvalues="32012|32013|32014|32015" />
     </category>
 </settings>

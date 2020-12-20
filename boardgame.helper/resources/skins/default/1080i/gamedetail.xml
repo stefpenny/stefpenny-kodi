@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<window>
+	<views>50</views>
+	<controls>
+		<!-- MAIN BACKGROUND -->
+		<control type="image">
+			<left>0</left>
+			<top>0</top>
+			<width>1920</width>
+			<height>1200</height>
+			<texture colordiffuse="50FFFFFF">fanart.jpg</texture>
+			<aspectratio scalediffuse="false" align="left" aligny="top">stretch</aspectratio>
+		</control>
+		<!-- BACKGROUND IMAGE -->
+		<control type="image">
+			<left>200</left>
+			<top>100</top>
+			<width>1520</width>
+			<height>880</height>
+			<texture background="true" colordiffuse="20FFFFFF">$INFO[Window.Property(GameImage)]</texture>
+			<aspectratio scalediffuse="false" align="center" aligny="center">scale</aspectratio>
+		</control>
+		<control type="image">
+			<left>220</left>
+			<top>120</top>
+			<width>220</width>
+			<height>220</height>
+			<texture>$INFO[Window.Property(GameImage)]</texture>
+			<aspectratio scalediffuse="false" align="left" aligny="top">keep</aspectratio>
+		</control>
+		<!-- TYPE IMAGE -->
+		<control type="image">
+			<left>460</left>
+			<top>120</top>
+			<width>24</width>
+			<height>24</height>
+			<texture>$INFO[Window.Property(TypeIcon)]</texture>
+			<aspectratio scalediffuse="false" align="left" aligny="top">keep</aspectratio>
+		</control>
+		<!-- TYPE VALUE -->
+		<control type="label">
+			<left>490</left>
+			<top>116</top>
+			<height>25</height>
+			<width>200</width>
+			<font>font10</font>
+			<textcolor>FFFFFFFF</textcolor>
+			<label>[UPPERCASE]$INFO[Window.Property(TypeValue)][/UPPERCASE]</label>
+		</control>
+		<!-- RANK IMAGE -->
+		<control type="image">
+			<left>720</left>
+			<top>120</top>
+			<width>24</width>
+			<height>24</height>
+			<texture>$INFO[Window.Property(RankIcon)]</texture>
+			<aspectratio scalediffuse="false" align="left" aligny="top">keep</aspectratio>
+		</control>
+		<!-- RANK VALUE -->
+		<control type="label">
+			<left>750</left>
+			<top>116</top>
+			<height>25</height>
+			<width>1000</width>
+			<font>font10</font>
+			<textcolor>FFFFFFFF</textcolor>
+			<label>[UPPERCASE]$INFO[Window.Property(RankValue)][/UPPERCASE]</label>
+		</control>
+		<!-- RATING IMAGE -->
+		<control type="image">
+			<left>460</left>
+			<top>150</top>
+			<width>50</width>
+			<height>60</height>
+			<texture>$INFO[Window.Property(RatingIcon)]</texture>
+			<aspectratio scalediffuse="false" align="left" aligny="top">keep</aspectratio>
+		</control>
+		<!-- RATING VALUE -->
+		<control type="label">
+			<left>462</left>
+			<top>147</top>
+			<height>60</height>
+			<width>50</width>
+			<font>font12</font>
+			<align>center</align>
+			<aligny>center</aligny>
+			<label>[B]$INFO[Window.Property(RatingValue)][/B]</label>
+		</control>
+		<!-- GAME TITLE -->
+		<control type="label">
+			<left>530</left>
+			<top>155</top>
+			<height>20</height>
+			<width>1700</width>
+			<font>font14</font>
+			<textcolor>FFFFFFFF</textcolor>
+			<label>$INFO[Window.Property(Name)]</label>
+		</control>
+		<!-- LINE SEPARATOR -->
+		<control type="image">
+			<left>460</left>
+			<top>230</top>
+			<width>1200</width>
+			<height>1</height>
+			<texture colordiffuse="50FFFFFF">$INFO[Window.Property(LineSepH)]</texture>
+			<aspectratio scalediffuse="false" align="left" aligny="top">keep</aspectratio>
+		</control>
+		<!-- NUM PLAYERS -->
+		<control type="label">
+			<left>460</left>
+			<top>240</top>
+			<height>20</height>
+			<width>150</width>
+			<font>font10</font>
+			<textcolor>FFFFFFFF</textcolor>
+			<label>$INFO[Window.Property(NumPlayers)]</label>
+		</control>
+		<!-- LINE SEPARATOR -->
+		<control type="image">
+			<left>630</left>
+			<top>231</top>
+			<width>10</width>
+			<height>50</height>
+			<texture colordiffuse="50FFFFFF">$INFO[Window.Property(LineSepV)]</texture>
+			<aspectratio scalediffuse="false" align="left" aligny="top">keep</aspectratio>
+		</control>
+		<!-- PLAYING TIME -->
+		<control type="label">
+			<left>660</left>
+			<top>240</top>
+			<height>20</height>
+			<width>150</width>
+			<font>font10</font>
+			<textcolor>FFFFFFFF</textcolor>
+			<label>$INFO[Window.Property(PlayingTime)]</label>
+		</control>
+		<!-- LINE SEPARATOR -->
+		<control type="image">
+			<left>830</left>
+			<top>231</top>
+			<width>10</width>
+			<height>50</height>
+			<texture colordiffuse="50FFFFFF">$INFO[Window.Property(LineSepV)]</texture>
+			<aspectratio scalediffuse="false" align="left" aligny="top">keep</aspectratio>
+		</control>
+		<!-- AGE -->
+		<control type="label">
+			<left>860</left>
+			<top>240</top>
+			<height>20</height>
+			<width>150</width>
+			<font>font10</font>
+			<textcolor>FFFFFFFF</textcolor>
+			<label>$INFO[Window.Property(Age)]</label>
+		</control>
+		<!-- LINE SEPARATOR -->
+		<control type="image">
+			<left>1030</left>
+			<top>231</top>
+			<width>10</width>
+			<height>50</height>
+			<texture colordiffuse="50FFFFFF">$INFO[Window.Property(LineSepV)]</texture>
+			<aspectratio scalediffuse="false" align="left" aligny="top">keep</aspectratio>
+		</control>
+		<!-- WEIGHT -->
+		<control type="label">
+			<left>1060</left>
+			<top>240</top>
+			<height>20</height>
+			<width>150</width>
+			<font>font10</font>
+			<textcolor>FFFFFFFF</textcolor>
+			<label>$INFO[Window.Property(Weight)]</label>
+		</control>
+		<!-- DESIGNER -->
+		<control type="label">
+			<left>460</left>
+			<top>300</top>
+			<height>20</height>
+			<width>1000</width>
+			<font>font10</font>
+			<textcolor>FFFFFFFF</textcolor>
+			<label>$INFO[Window.Property(Designer)]</label>
+		</control>
+		<!-- ARTIST -->
+		<control type="label">
+			<left>460</left>
+			<top>330</top>
+			<height>20</height>
+			<width>1000</width>
+			<font>font10</font>
+			<textcolor>FFFFFFFF</textcolor>
+			<label>$INFO[Window.Property(Artist)]</label>
+		</control>
+		<!-- PUBLISHER -->
+		<control type="label">
+			<left>460</left>
+			<top>360</top>
+			<height>20</height>
+			<width>1000</width>
+			<font>font10</font>
+			<textcolor>FFFFFFFF</textcolor>
+			<label>$INFO[Window.Property(Publisher)]</label>
+		</control>
+		<!-- DESCRIPTION -->
+		<control type="textbox">
+			<left>460</left>
+			<top>420</top>
+			<height>300</height>
+			<width>1200</width>
+			<font>font10</font>
+			<textcolor>FFFFFFFF</textcolor>
+			<pagecontrol>17</pagecontrol>
+		    <scrolltime>200</scrolltime>
+		    <autoscroll delay="3000" time="1500" repeat="10000">!Control.HasFocus(17)</autoscroll>
+			<label>$INFO[Window.Property(Description)]</label>
+		</control>
+		<control type="scrollbar" id="17">
+			  <description></description>
+			  <left>1680</left>
+			  <top>420</top>
+			  <width>10</width>
+			  <height>300</height>
+			  <visible>true</visible>
+			  <pulseonselect></pulseonselect>
+			  <orientation>vertical</orientation>
+			  <showonepage>false</showonepage>
+			  <onup>2</onup>
+			  <ondown>3</ondown>
+			  <onleft>1</onleft>
+			  <onright>1</onright>
+		</control>
+	</controls>
+</window>

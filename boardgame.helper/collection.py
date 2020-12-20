@@ -1,4 +1,5 @@
 import untangle
+import xbmc
 
 class Collection:
     def __init__(self, name):
@@ -9,6 +10,7 @@ class Collection:
         self.total_owned = 0
         self.total_wish_list = 0
         self.total_exp = 0
+        self.game = []
 
     def __build_dict(self, p):
         rank = p.stats.rating.ranks.rank
@@ -62,6 +64,106 @@ class Collection:
 
         return _d
 
+    def __build_game_dict(self, p):
+        xbmc.log('dict : ' + str(p.image))
+
+        rank = p.statistics.ratings.ranks.rank
+        rank_list = []
+
+        # Handling untangle returning single-element list containing string in dictionary format for ranks
+        for i in range(len(rank)):
+            temp = str(rank[i])
+            arr = temp.split("'")
+            n_index = arr.index("friendlyname")
+            r_index = arr.index("value")
+            rank_list.append(arr[n_index+2])
+            rank_list.append(arr[r_index+2])
+
+        names = p.name
+        name = ''
+        for i in range(len(names)):
+            if names[i]['type'] == "primary":
+                name = names[i]['value']
+
+        # Handling unpublished games
+        try:
+            pub_year = p.yearpublished['value']
+        except AttributeError:
+            pub_year = -1
+
+        try:
+            weight = round(float(p.statistics.ratings.averageweight['value']))
+        except:
+            weight = '--'
+
+        links = p.link
+        count = 0
+        designer = ''
+        try:
+            for i in range(len(links)):
+                if links[i]['type'] == "boardgamedesigner":
+                    designer = designer + links[i]['value'].encode('utf-8')
+                    count = count + 1
+                    if count > 3:
+                        break
+                    else:
+                        designer = designer + ', '
+        except:
+            designer = '--'
+
+        count = 0
+        artist = ''
+        try:
+            for i in range(len(links)):
+                if links[i]['type'] == "boardgameartist":
+                    artist = artist + links[i]['value'].encode('utf-8')
+                    count = count + 1
+                    if count > 3:
+                        break
+                    else:
+                        artist = artist + ', '
+        except:
+            artist = '--'
+
+        count = 0
+        publisher = ''
+        try:
+            for i in range(len(links)):
+                if links[i]['type'] == "boardgamepublisher":
+                    publisher = publisher + links[i]['value'].encode('utf-8')
+                    count = count + 1
+                    if count > 3:
+                        break
+                    else:
+                        publisher = publisher + ', '
+        except:
+            publisher = '--'
+
+        _d = {
+            'name': name,
+            'bgg_id': p['id'],
+            'type': p['type'],
+            'year_published': pub_year,
+            'min_players': p.minplayers['value'],
+            'max_players': self.__check_none(p.maxplayers['value']),
+            'min_play_time': self.__check_none(p.minplaytime['value']),
+            'max_play_time': self.__check_none(p.maxplaytime['value']),
+            'playingtime ': self.__check_none(p.playingtime ['value']),
+            'average_rating': round(float(p.statistics.ratings.average['value'])),
+            'rank': rank_list,
+            'image': p.image,
+            'thumbnail': p.thumbnail,
+            'description': p.description,
+            'minage': p.minage['value'],
+            'weight': weight,
+            'designer': designer,
+            'artist': artist,
+            'publisher': publisher,
+            'vidcount': p.videos['total']
+        }
+
+        return _d
+
     def __check_none(self, value):
         if value is None:
             return -1
@@ -97,7 +199,6 @@ class Collection:
         expansion = "&subtype=boardgameexpansion"
         full_stats = "&stats=1"
 
-        # Three calls are necessary due to quirks in boardgamegeek.com's API - see bgg xml document tree.txt
         while True:
             api_url = str("https://api.geekdo.com/xmlapi2/collection?username=" + self.name)
             obj_games = untangle.parse(api_url + no_expansion + full_stats)
@@ -136,5 +237,42 @@ class Collection:
 
         if not __name__ == '__main__':
             return 0
+
+    def loadgame(self, gameid):
+        while True:
+            api_url = str("https://api.geekdo.com/xmlapi2/thing?id=" + str(gameid) + '&stats=1&videos=1')
+            obj_game = untangle.parse(api_url)
+
+            try:
+                if obj_game.errors.error:
+                    xbmc.log('ERROR 98')
+                    if __name__ == '__main__':
+                        return 98
+                    else:
+                        return 1
+
+            except AttributeError:
+                # if no "error" attribute then there were no errors
+                pass
+
+            # Test for 202 response
+            try:
+                if len(obj_game.items.item) == 0:
+                    if __name__ == '__main__':
+                        return 99
+                    else:
+                        return 3
+
+                self.game = self.__build_game_dict(obj_game.items.item)
+
+            except AttributeError:
+                # 202 Response produces AttributeError -- 202 is common on your first call to a given username in a day
+                if __name__ == '__main__':
+                    time.sleep(3)
+                    continue
+                else:
+                    return 2
+            break
+
 
     

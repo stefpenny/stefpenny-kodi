@@ -13,7 +13,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: en\n"
+"Language: fr\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgctxt "#32001"
@@ -22,4 +22,56 @@ msgstr ""
 
 msgctxt "#32002"
 msgid "BGG Username"
+msgstr ""
+
+msgctxt "#32003"
+msgid "Refresh collection at start"
+msgstr ""
+
+msgctxt "#32004"
+msgid "List default sort"
+msgstr ""
+
+msgctxt "#32005"
+msgid "By Name (ASC)"
+msgstr ""
+
+msgctxt "#32006"
+msgid "By Name (DESC)"
+msgstr ""
+
+msgctxt "#32007"
+msgid "By Year published (ASC)"
+msgstr ""
+
+msgctxt "#32008"
+msgid "By Year published (DESC)"
+msgstr ""
+
+msgctxt "#32009"
+msgid "By Type (ASC)"
+msgstr ""
+
+msgctxt "#32010"
+msgid "By Type (DESC)"
+msgstr ""
+
+msgctxt "#32011"
+msgid "List default filter"
+msgstr ""
+
+msgctxt "#32012"
+msgid "Show All Owned"
+msgstr ""
+
+msgctxt "#32013"
+msgid "Show Base Games"
+msgstr ""
+
+msgctxt "#32014"
+msgid "Show Expansions"
+msgstr ""
+
+msgctxt "#32015"
+msgid "Show WishList"
 msgstr ""
