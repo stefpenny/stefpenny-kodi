@@ -29,6 +29,15 @@
 			<textcolor>FFFFFFFF</textcolor>
 			<label>$INFO[Window.Property(TestValue)]</label>
 		</control>
+		<control type="label">
+			<left>20</left>
+			<top>10</top>
+			<height>25</height>
+			<width>1900</width>
+			<font>font12</font>
+			<textcolor>FFFFFFFF</textcolor>
+			<label>$INFO[Window.Property(actionid)]</label>
+		</control>
 		<control type="list" id="50">
 			<left>150</left>
 			<top>120</top>

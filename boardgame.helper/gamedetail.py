@@ -46,7 +46,7 @@ class GameDetail(xbmcgui.WindowXML):
         file_name = self.gamedetail.game['image'].cdata.split('/')[-1]
         file_ext = file_name.split('.')[-1]
 
-        self.setProperty('GameImage', str(__profile__ + 'imgCache\\' + str(self.gamedetail.game['bgg_id'] + '.' + file_ext)))
+        self.setProperty('GameImage', str(__profile__ + str(self.gamedetail.game['bgg_id'] + '.' + file_ext)))
         self.setProperty('Name', self.gamedetail.game['name'] + ' (' + self.gamedetail.game['year_published'] + ')')
         self.setProperty('RatingValue', str(self.gamedetail.game['average_rating']))
 

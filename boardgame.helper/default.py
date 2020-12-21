@@ -54,6 +54,7 @@ class GUI(xbmcgui.WindowXML):
         self.setProperty('TestValue', str(self.CurIndex))
 
     def onAction(self, action):
+        self.setProperty('actionid', str(action.getId()))
         if action.getId() == 10:
             self.close()
         try:
@@ -127,7 +128,8 @@ class GUI(xbmcgui.WindowXML):
                 self.getControl(50).selectItem(self.CurIndex)
 
         if control == self.videobutton.getId():
-            xbmc.executebuiltin("RunPlugin(plugin://plugin.video.youtube/play/?video_id=GYyNQVxofc8&incognito=true)")
+            self.close()
+            # xbmc.executebuiltin("RunPlugin(plugin://plugin.video.youtube/play/?video_id=GYyNQVxofc8&incognito=true)")
 
     def build_list(self, mode, sort):
         listitems = []
@@ -168,7 +170,7 @@ class GUI(xbmcgui.WindowXML):
 
             listitem = xbmcgui.ListItem(elt['name'] + ' (' + str(elt['year_published']) + ')')
             listitem.setIsFolder(True)
-            listitem.setArt({'icon': str(__profile__ + 'imgCache\\' + str(elt['bgg_id'] + '.' + file_ext))})
+            listitem.setArt({'icon': str(__profile__ + str(elt['bgg_id'] + '.' + file_ext))})
 
             # Item properties
             listitem.setProperty('RatingValue', str(elt['rating']))
@@ -239,8 +241,8 @@ class GUI(xbmcgui.WindowXML):
                 i = 1
                 for elt in self.table.games:
 
-                    imagedownload.download(__profile__ + 'imgCache\\', str(elt['image'].cdata), str(elt['bgg_id']))
-                    imagedownload.download(__profile__ + 'imgCache\\', str(elt['thumbnail'].cdata),
+                    imagedownload.download(__profile__, str(elt['image'].cdata), str(elt['bgg_id']))
+                    imagedownload.download(__profile__, str(elt['thumbnail'].cdata),
                                            str(elt['bgg_id']) + '_tn')
 
                     progress.update(100 * i / total_games,
@@ -253,8 +255,8 @@ class GUI(xbmcgui.WindowXML):
 
                 for elt in self.table.expansions:
 
-                    imagedownload.download(__profile__ + 'imgCache\\', str(elt['image'].cdata), str(elt['bgg_id']))
-                    imagedownload.download(__profile__ + 'imgCache\\', str(elt['thumbnail'].cdata),
+                    imagedownload.download(__profile__, str(elt['image'].cdata), str(elt['bgg_id']))
+                    imagedownload.download(__profile__, str(elt['thumbnail'].cdata),
                                            str(elt['bgg_id']) + '_tn')
 
                     progress.update(100 * i / total_games,
@@ -267,8 +269,8 @@ class GUI(xbmcgui.WindowXML):
 
                 for elt in self.table.wish_list:
 
-                    imagedownload.download(__profile__ + 'imgCache\\', str(elt['image'].cdata), str(elt['bgg_id']))
-                    imagedownload.download(__profile__ + 'imgCache\\', str(elt['thumbnail'].cdata),
+                    imagedownload.download(__profile__, str(elt['image'].cdata), str(elt['bgg_id']))
+                    imagedownload.download(__profile__, str(elt['thumbnail'].cdata),
                                            str(elt['bgg_id']) + '_tn')
 
                     progress.update(100 * i / total_games,
