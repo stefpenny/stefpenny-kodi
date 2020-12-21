@@ -175,7 +175,7 @@
 					<font>font10</font>
 					<textcolor>FFFFFFFF</textcolor>
 					<label>$INFO[ListItem.Property(PlayingTime)]</label>
-				</control>		
+				</control>
 			</itemlayout>
 			<focusedlayout height="200" width="1620">				
 				<!-- MAIN IMAGE -->
@@ -315,7 +315,7 @@
 					<font>font10</font>
 					<textcolor>FFFFFFFF</textcolor>
 					<label>$INFO[ListItem.Property(PlayingTime)]</label>
-				</control>		
+				</control>
 			</focusedlayout>
 		</control>
 	</controls>

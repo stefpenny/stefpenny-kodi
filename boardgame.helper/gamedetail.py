@@ -7,8 +7,9 @@ import json
 import time
 import sys
 import imagedownload
-import collection
+import BGGApi
 import os
+import videos_list
 
 try:
     import StorageServer
@@ -32,6 +33,12 @@ class GameDetail(xbmcgui.WindowXML):
         self.mediapath = os.path.join(CWD, 'resources', 'skins', 'Default', 'media')
         self.gameid = kwargs['gameid']
 
+    def onClick(self, control):
+        if control == self.videobutton.getId():
+            newWin = videos_list.Vid('videos_list.xml', CWD, 'default', '1080i', True, gameid=self.gameid)
+            newWin.doModal()
+            del newWin
+
     def onInit(self):
         self.setProperty('RatingIcon', 'rating.png')
         self.setProperty('RankIcon', 'star-icon.png')
@@ -40,14 +47,21 @@ class GameDetail(xbmcgui.WindowXML):
         self.setProperty('LineSepH', 'lineh.png')
 
         # getting game details
-        self.gamedetail = collection.Collection('')
+        self.gamedetail = BGGApi.BGGApi()
         self.gamedetail.loadgame(self.gameid)
 
-        file_name = self.gamedetail.game['image'].cdata.split('/')[-1]
-        file_ext = file_name.split('.')[-1]
+        if self.gamedetail.game['image'] != 'no_img.jpg':
+            file_name = self.gamedetail.game['image'].cdata.split('/')[-1]
+            file_ext = file_name.split('.')[-1]
 
-        self.setProperty('GameImage', str(__profile__ + str(self.gamedetail.game['bgg_id'] + '.' + file_ext)))
-        self.setProperty('Name', self.gamedetail.game['name'] + ' (' + self.gamedetail.game['year_published'] + ')')
+            if os.path.exists(str(__profile__ + str(self.gamedetail.game['bgg_id'] + '.' + file_ext))):
+                self.setProperty('GameImage', str(__profile__ + str(self.gamedetail.game['bgg_id'] + '.' + file_ext)))
+            else:
+                self.setProperty('GameImage', str(self.gamedetail.game['image'].cdata))
+        else:
+            self.setProperty('GameImage', str(self.gamedetail.game['image']))
+
+        self.setProperty('Name', self.gamedetail.game['name'].decode('utf-8') + ' (' + self.gamedetail.game['year_published'].decode('utf-8') + ')')
         self.setProperty('RatingValue', str(self.gamedetail.game['average_rating']))
 
         RankValue = 'RANK: '

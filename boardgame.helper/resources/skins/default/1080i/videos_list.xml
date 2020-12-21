@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<window>
+	<views>50</views>
+	<controls>
+		<!-- MAIN BACKGROUND -->
+		<control type="image">
+			<left>0</left>
+			<top>0</top>
+			<width>1920</width>
+			<height>1200</height>
+			<texture colordiffuse="50FFFFFF">fanart.jpg</texture>
+			<aspectratio scalediffuse="false" align="left" aligny="top">stretch</aspectratio>
+		</control>
+		<control type="label">
+			<left>20</left>
+			<top>30</top>
+			<height>25</height>
+			<width>1900</width>
+			<font>font12</font>
+			<textcolor>FFFFFFFF</textcolor>
+			<label>$INFO[Window.Property(Results)]</label>
+		</control>
+			<control type="panel" id="50">
+			<left>350</left>
+			<top>120</top>
+			<width>1500</width>
+			<height>900</height>
+			<onleft>9000</onleft>
+			<onright>60</onright>
+			<onup>52</onup>
+			<ondown>52</ondown>
+			<viewtype label="536">icon</viewtype>
+			<pagecontrol>60</pagecontrol>
+			<include>contentpanelslide</include>
+			<itemlayout height="240" width="360">
+				<control type="image">
+					<left>10</left>
+					<top>10</top>
+					<width>331</width>
+					<height>186</height>
+					<texture>$INFO[ListItem.Icon]</texture>
+				</control>
+				<control type="image">
+					<left>10</left>
+					<top>10</top>
+					<width>331</width>
+					<height>186</height>
+					<texture>$INFO[ListItem.Overlay]</texture>
+				</control>
+				<control type="label">
+					<left>0</left>
+					<top>190</top>
+					<width>331</width>
+					<height>22</height>
+					<font>font10</font>
+					<selectedcolor>green</selectedcolor>
+					<align>left</align>
+					<label>$INFO[ListItem.Label]</label>
+				</control>
+			</itemlayout>
+			<focusedlayout height="240" width="360">
+				<control type="image">
+					<left>10</left>
+					<top>10</top>
+					<width>331</width>
+					<height>186</height>
+					<texture>$INFO[ListItem.Icon]</texture>
+				</control>
+				<control type="image">
+					<left>10</left>
+					<top>10</top>
+					<width>331</width>
+					<height>186</height>
+					<texture>$INFO[ListItem.Overlay]</texture>
+				</control>
+				<control type="label">
+					<left>0</left>
+					<top>190</top>
+					<width>331</width>
+					<height>22</height>
+					<font>font10</font>
+					<selectedcolor>green</selectedcolor>
+					<align>left</align>
+					<label>$INFO[ListItem.Label]</label>
+				</control>
+			</focusedlayout>
+		</control>
+	</controls>
+</window>

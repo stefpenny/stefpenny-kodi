@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<window>
+	<views>50</views>
+	<controls>
+		<!-- MAIN BACKGROUND -->
+		<control type="image">
+			<left>0</left>
+			<top>0</top>
+			<width>1920</width>
+			<height>1200</height>
+			<texture colordiffuse="50FFFFFF">fanart.jpg</texture>
+			<aspectratio scalediffuse="false" align="left" aligny="top">stretch</aspectratio>
+		</control>
+		<control type="label">
+			<left>20</left>
+			<top>30</top>
+			<height>25</height>
+			<width>1900</width>
+			<font>font12</font>
+			<textcolor>FFFFFFFF</textcolor>
+			<label>$INFO[Window.Property(Results)]</label>
+		</control>
+		<control type="list" id="50">
+			<left>150</left>
+			<top>120</top>
+			<width>1620</width>
+			<height>900</height>
+			<viewtype label="3D list">list</viewtype>
+			<itemlayout height="50" width="1620">
+				<!-- BACKGROUND IMAGE -->
+				<control type="image">
+					<left>0</left>
+					<top>0</top>
+					<width>1620</width>
+					<height>50</height>
+					<texture>listbkg.png</texture>
+				</control>
+				<!-- GAME TITLE -->
+				<control type="label">
+					<left>20</left>
+					<top>10</top>
+					<height>20</height>
+					<width>1700</width>
+					<font>font14</font>
+					<textcolor>FFFFFFFF</textcolor>
+					<label>$INFO[ListItem.Label]</label>
+				</control>
+			</itemlayout>
+			<focusedlayout height="50" width="1620">
+				<!-- BACKGROUND IMAGE -->
+				<control type="image">
+					<left>0</left>
+					<top>0</top>
+					<width>1620</width>
+					<height>50</height>
+					<texture>listbkg.png</texture>
+				</control>
+				<!-- GAME TITLE -->
+				<control type="label">
+					<left>20</left>
+					<top>10</top>
+					<height>20</height>
+					<width>1700</width>
+					<font>font14</font>
+					<textcolor>FFFFFFFF</textcolor>
+					<label>$INFO[ListItem.Label]</label>
+				</control>
+				<control type="image">
+					<left>0</left>
+					<top>0</top>
+					<width>1620</width>
+					<height>50</height>
+					<texture>list-overlay.png</texture>
+				</control>
+			</focusedlayout>
+		</control>
+	</controls>
+</window>
