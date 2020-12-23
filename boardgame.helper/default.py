@@ -16,6 +16,14 @@ ADDON = xbmcaddon.Addon()
 CWD = ADDON.getAddonInfo('path').decode('utf-8')
 __profile__ = xbmc.translatePath(ADDON.getAddonInfo('profile')).decode("utf-8")
 
+class MyMonitor(xbmc.Monitor):
+    def __init__(self, *args, **kwargs):
+        xbmc.Monitor.__init__(self)
+        self.action = kwargs['action']
+
+    def onSettingsChanged(self):
+        self.action()
+
 # add a class to create your xml based window
 class GUI(xbmcgui.WindowXML):
 
@@ -38,6 +46,7 @@ class GUI(xbmcgui.WindowXML):
         self.full_list = []
         self.listitems = []
         self.firstInit = True
+        self.Monitor = MyMonitor(action=self.Init)
 
     def onClick(self, control):
         if control == 50:
@@ -187,7 +196,13 @@ class GUI(xbmcgui.WindowXML):
         # until now we have a blank window, the onInit function will parse your xml file
 
     def onInit(self):
+        self.Init()
+
+    def Init(self):
         my_addon = xbmcaddon.Addon()
+
+        if my_addon.getSetting('username') == '':
+            xbmcaddon.Addon().openSettings()
 
         self.setProperty('RatingIcon', 'rating.png')
         self.setProperty('RankIcon', 'star-icon.png')
@@ -198,11 +213,13 @@ class GUI(xbmcgui.WindowXML):
         xbmc.executebuiltin('Container.SetViewMode(50)')
         user_name = my_addon.getSetting('username')
 
-        if self.firstInit == True:
+        if self.firstInit == True and user_name != '':
             self.curSort = int(my_addon.getSetting('default_sort'))
             self.curFilter = int(my_addon.getSetting('default_filter'))
+
             self.table = BGGApi.BGGApi()
             self.table.loadcollection(user_name)
+            self.addControl(self.SearchButton)
 
             if my_addon.getSetting('refresh') == 'true':
                 progress = xbmcgui.DialogProgress()
@@ -258,7 +275,6 @@ class GUI(xbmcgui.WindowXML):
 
             self.addControl(self.SortButton)
             self.addControl(self.FilterButton)
-            self.addControl(self.SearchButton)
 
             # Navigation between controls
             self.SortButton.controlRight(self.SearchButton)
@@ -274,20 +290,23 @@ class GUI(xbmcgui.WindowXML):
             self.getControl(50).controlRight(self.SortButton)
 
             self.setProperty('CollectionStats', user_name + '\'s collection: ' + str(self.table.total_owned)
-                             + ' Boardgames / ' + str(self.table.total_exp) + ' Expansions')
+                             + ' Boardgames / ' + str(self.table.total_exp) + ' Expansions / ' + str(self.table.total_wish_list) + ' Wishes')
 
-        self.listitems = self.build_list(self.curFilter, self.curSort)
+        if my_addon.getSetting('username') == '':
+            self.setProperty('CollectionStats', 'BGG Username not set, go to addon settings')
+        else:
+            self.listitems = self.build_list(self.curFilter, self.curSort)
 
-        self.clearList()
-        self.addItems(self.listitems)
+            self.clearList()
+            self.addItems(self.listitems)
 
-        xbmc.sleep(100)
+            xbmc.sleep(100)
 
-        self.setFocusId(50)
-        self.getControl(50).selectItem(self.CurIndex)
+            self.setFocusId(50)
+            self.getControl(50).selectItem(self.CurIndex)
 
-        # Window Already Initialized
-        self.firstInit = False
+            # Window Already Initialized
+            self.firstInit = False
 
 
 if __name__ == '__main__':

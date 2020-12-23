@@ -27,6 +27,7 @@ class Res(xbmcgui.WindowXML):
         self.full_list = []
         self.listitems = []
         self.firstInit = True
+        self.setProperty('LineSepH', 'lineh.png')
         self.SearchButton = xbmcgui.ControlButton(900, 30, 270, 50, 'New Search', alignment=2
                                                   , focusTexture=os.path.join(self.mediapath, 'buttonhover.png')
                                                   , noFocusTexture=os.path.join(self.mediapath, 'button.png'))
@@ -54,6 +55,7 @@ class Res(xbmcgui.WindowXML):
 
         if len(self.table.games) == 0:
             self.setProperty('Results', 'No game found for the query \"' + self.searchquery + '\"')
+            self.setFocusId(self.SearchButton.getId())
 
         elif len(self.table.games) == 1:
             self.setProperty('Results',
@@ -66,6 +68,10 @@ class Res(xbmcgui.WindowXML):
             self.full_list.append(elt)
             listitem = xbmcgui.ListItem(elt['name'].encode('utf-8') + ' (' + str(elt['year_published']) + ')')
             listitem.setProperty('bggid', str(elt['bgg_id']))
+            if elt['type'] == 'boardgame':
+                listitem.setProperty('type', 'Boardgame')
+            elif elt['type'] == 'boardgameexpansion':
+                listitem.setProperty('type', 'Expansion')
             self.listitems.append(listitem)
 
         self.clearList()
@@ -73,18 +79,24 @@ class Res(xbmcgui.WindowXML):
 
         xbmc.sleep(100)
 
-        self.setFocusId(50)
-        self.getControl(50).selectItem(self.CurIndex)
+        if len(self.table.games) > 0:
+            self.setFocusId(50)
+            self.getControl(50).selectItem(self.CurIndex)
 
     def onInit(self):
         my_addon = xbmcaddon.Addon()
         xbmc.executebuiltin('Container.SetViewMode(50)')
 
-        self.newSearch()
-
         if self.firstInit == True:
             self.addControl(self.SearchButton)
 
+        self.newSearch()
+
         # Window Already Initialized
         self.firstInit = False
+
+        self.SearchButton.controlDown(self.getControl(50))
+        self.getControl(50).controlLeft(self.SearchButton)
+        self.getControl(50).controlRight(self.SearchButton)
+        self.getControl(50).selectItem(self.CurIndex)
 

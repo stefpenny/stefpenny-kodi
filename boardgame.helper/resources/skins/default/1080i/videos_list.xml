@@ -20,7 +20,17 @@
 			<textcolor>FFFFFFFF</textcolor>
 			<label>$INFO[Window.Property(Results)]</label>
 		</control>
-			<control type="panel" id="50">
+		<control type="label">
+			<left>20</left>
+			<top>80</top>
+			<height>25</height>
+			<width>270</width>
+			<font>font20_title</font>
+			<align>center</align>
+			<textcolor>FFFFFFFF</textcolor>
+			<label>[I]CATEGORIES[/I]</label>
+		</control>
+		<control type="panel" id="50">
 			<left>350</left>
 			<top>120</top>
 			<width>1500</width>
@@ -55,6 +65,8 @@
 					<font>font10</font>
 					<selectedcolor>green</selectedcolor>
 					<align>left</align>
+					<scroll>true</scroll>
+					<scrollspeed>50</scrollspeed>
 					<label>$INFO[ListItem.Label]</label>
 				</control>
 			</itemlayout>
@@ -71,7 +83,7 @@
 					<top>10</top>
 					<width>331</width>
 					<height>186</height>
-					<texture>$INFO[ListItem.Overlay]</texture>
+					<texture>play-button.png</texture>
 				</control>
 				<control type="label">
 					<left>0</left>
@@ -81,6 +93,8 @@
 					<font>font10</font>
 					<selectedcolor>green</selectedcolor>
 					<align>left</align>
+					<scroll>true</scroll>
+					<scrollspeed>30</scrollspeed>
 					<label>$INFO[ListItem.Label]</label>
 				</control>
 			</focusedlayout>

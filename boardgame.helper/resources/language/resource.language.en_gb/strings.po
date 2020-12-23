@@ -75,3 +75,7 @@ msgstr ""
 msgctxt "#32015"
 msgid "Show WishList"
 msgstr ""
+
+msgctxt "#32016"
+msgid "Videos default language from interface language"
+msgstr ""

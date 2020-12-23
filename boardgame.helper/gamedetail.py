@@ -10,6 +10,7 @@ import imagedownload
 import BGGApi
 import os
 import videos_list
+import forums_list
 
 try:
     import StorageServer
@@ -36,6 +37,10 @@ class GameDetail(xbmcgui.WindowXML):
     def onClick(self, control):
         if control == self.videobutton.getId():
             newWin = videos_list.Vid('videos_list.xml', CWD, 'default', '1080i', True, gameid=self.gameid)
+            newWin.doModal()
+            del newWin
+        elif control == self.forumbutton.getId():
+            newWin = forums_list.Vid('forums_list.xml', CWD, 'default', '1080i', True, gameid=self.gameid)
             newWin.doModal()
             del newWin
 
@@ -118,4 +123,12 @@ class GameDetail(xbmcgui.WindowXML):
                                                  , focusTexture=os.path.join(self.mediapath, 'buttonhover.png')
                                                  , noFocusTexture=os.path.join(self.mediapath, 'button.png'))
         self.addControl(self.forumbutton)
+
+        self.setFocusId(self.videobutton.getId())
+        #self.getControl(17).controlLeft(self.videobutton)
+        #self.getControl(17).controlRight(self.forumbutton)
+        self.videobutton.controlLeft(self.forumbutton)
+        self.videobutton.controlRight(self.forumbutton)
+        self.forumbutton.controlLeft(self.videobutton)
+        self.forumbutton.controlRight(self.videobutton)
 

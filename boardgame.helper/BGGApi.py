@@ -8,12 +8,18 @@ class BGGApi:
     def __init__(self):
         self.games = []
         self.videos = []
+        self.articles = []
+        self.article = ''
+        self.vidlang = []
+        self.forums = []
+        self.threads = []
         self.categories = []
         self.expansions = []
         self.wish_list = []
         self.total_owned = 0
         self.total_wish_list = 0
         self.total_exp = 0
+        self.total_articles = 0
         self.game = []
         self.pageId = 1
 
@@ -201,6 +207,40 @@ class BGGApi:
 
         return _d
 
+    def __build_forum_dict(self, p):
+
+        _d = {
+            'id': p['id'],
+            'threads': p['numthreads'],
+            'title': p['title']
+        }
+
+        return _d
+
+    def __build_thread_dict(self, p):
+
+        _d = {
+            'id': p['id'],
+            'subject': p['subject'],
+            'numarticles': p['numarticles'],
+            'author': p['author'],
+            'lastpostdate': p['lastpostdate']
+        }
+
+        return _d
+
+    def __build_article_dict(self, p):
+
+        _d = {
+            'id': p['id'],
+            'subject': p.subject.cdata,
+            'content': p.body.cdata,
+            'username': p['username'],
+            'postdate': p['postdate']
+        }
+
+        return _d
+
     def __build_video_dict(self, p):
 
         _d = {
@@ -208,7 +248,7 @@ class BGGApi:
             'title': p['title'],
             'videohost': p['videohost'],
             'image': p['images']['thumb'],
-            'language': p['language'],
+            'languageid': p['languageid'],
             'category': p['gallery']
         }
 
@@ -327,7 +367,7 @@ class BGGApi:
     def searchgames(self, query):
         while True:
             api_url = str(
-                "https://api.geekdo.com/xmlapi2/search?query=" + str(query) + '&type=boardgame,boardgameexpansion')
+                "https://api.geekdo.com/xmlapi2/search?query=" + str(query) + '&type=boardgameexpansion,boardgame')
             obj_games = untangle.parse(api_url)
 
             try:
@@ -349,9 +389,19 @@ class BGGApi:
                         return 99
                     else:
                         return 3
+                list = []
                 for i in range(len(obj_games.items)):
                     _game_dict = self.__build_search_dict(obj_games.items.item[i])
-                    self.games.append(_game_dict)
+                    list.append(_game_dict)
+
+                seen = set()
+                test = set()
+                for entry in list:
+                    if not entry['bgg_id'] in seen:
+                        self.games.append(entry)
+                        seen.add(entry['bgg_id'])
+
+                self.games.sort(key=lambda x: x.get('type'), reverse=False)
 
             except AttributeError:
                 # 202 Response produces AttributeError -- 202 is common on your first call to a given username in a day
@@ -363,11 +413,12 @@ class BGGApi:
             break
 
     def loadvideos(self, gameid):
+        call_count = 0
         while True:
             api_url = str('https://api.geekdo.com/api/videos?ajax=1&gallery=all&nosession=1&objectid=' + gameid + '&objecttype=thing&pageid=' + str(self.pageId) + '&showcount=50&sort=recent')
             result = requests.get(api_url)
             obj_videos = json.loads(result.text.encode("utf-8"))
-            xbmc.log('api_url : ' + api_url)
+            call_count += 1
             try:
                 if obj_videos.errors.error:
                     xbmc.log('ERROR 98')
@@ -406,12 +457,27 @@ class BGGApi:
                                         }
                                         self.categories.append(_category)
 
-                        if len(self.videos) < numitems:
-                            self.pageId = self.pageId + 1
-                            continue
+                                if y == "languages":
+                                    _lang = {
+                                        'id': 'all',
+                                        'name': 'All'
+                                    }
+                                    self.vidlang.append(_lang)
+
+                                    for lang in obj_videos[x][y]:
+                                        _lang = {
+                                            'id': lang['languageid'],
+                                            'name': lang['name']
+                                        }
+                                        self.vidlang.append(_lang)
 
                     except:
-                        xbmc.log('tret : ' + str(x))
+                        xbmc.log('err parse : ' + str(x))
+
+                if len(self.videos) < numitems and call_count < 100:
+                    self.pageId = self.pageId + 1
+                    #xbmc.log('stats : ' + str(numitems) + '/' + str(len(self.videos)) + '/' + str(self.pageId))
+                    continue
 
             except AttributeError:
                 # 202 Response produces AttributeError -- 202 is common on your first call to a given username in a day
@@ -420,4 +486,142 @@ class BGGApi:
                     continue
                 else:
                     return 2
+            break
+
+    def loadforums(self, gameid):
+        while True:
+            api_url = str('https://api.geekdo.com/xmlapi2/forumlist?id=' + str(gameid) + '&type=thing')
+            obj_forums = untangle.parse(api_url)
+
+            try:
+                if obj_forums.errors.error:
+                    xbmc.log('ERROR 98')
+                    if __name__ == '__main__':
+                        return 98
+                    else:
+                        return 1
+
+            except AttributeError:
+                # if no "error" attribute then there were no errors
+                xbmc.log('ATTR ERROR')
+                pass
+
+            # Test for 202 response
+            try:
+                if len(obj_forums) == 0:
+                    if __name__ == '__main__':
+                        xbmc.log('ERROR 99')
+                        return 99
+                    else:
+                        xbmc.log('ERROR 3')
+                        return 3
+
+                for i in range(len(obj_forums.forums)):
+                    _forum_dict = self.__build_forum_dict(obj_forums.forums.forum[i])
+                    self.forums.append(_forum_dict)
+
+            except AttributeError:
+                # 202 Response produces AttributeError -- 202 is common on your first call to a given username in a day
+                if __name__ == '__main__':
+                    xbmc.log('ATTR ERROR 3')
+                    time.sleep(3)
+                    continue
+                else:
+                    xbmc.log('ERROR 2')
+                    return 2
+            break
+
+    def loadthreads(self, forumid, pageid):
+        self.threads = []
+        while True:
+            api_url = str('https://api.geekdo.com/xmlapi2/forum?id=' + str(forumid) + '&page=' + str(pageid))
+            obj_threads = untangle.parse(api_url)
+
+            try:
+                if obj_threads.errors.error:
+                    xbmc.log('ERROR 98')
+                    if __name__ == '__main__':
+                        return 98
+                    else:
+                        return 1
+
+            except AttributeError:
+                # if no "error" attribute then there were no errors
+                xbmc.log('ATTR ERROR')
+                pass
+
+            # Test for 202 response
+            try:
+                if len(obj_threads) == 0:
+                    if __name__ == '__main__':
+                        xbmc.log('ERROR 99')
+                        return 99
+                    else:
+                        xbmc.log('ERROR 3')
+                        return 3
+
+                for i in range(len(obj_threads.forum.threads)):
+                    _thread_dict = self.__build_thread_dict(obj_threads.forum.threads.thread[i])
+                    self.threads.append(_thread_dict)
+
+            except AttributeError:
+                # 202 Response produces AttributeError -- 202 is common on your first call to a given username in a day
+                if __name__ == '__main__':
+                    xbmc.log('ATTR ERROR 3')
+                    time.sleep(3)
+                    continue
+                else:
+                    xbmc.log('ERROR 2')
+                    return 2
+
+
+            break
+
+    def loadarticles(self, threadid, minarticleid):
+        self.threads = []
+        while True:
+            api_url = str('https://api.geekdo.com/xmlapi2/thread?id=' + str(threadid) + '&count=50&minarticleid=' + str(minarticleid))
+            obj_threads = untangle.parse(api_url)
+
+            try:
+                if obj_threads.errors.error:
+                    xbmc.log('ERROR 98')
+                    if __name__ == '__main__':
+                        return 98
+                    else:
+                        return 1
+
+            except AttributeError:
+                # if no "error" attribute then there were no errors
+                xbmc.log('ATTR ERROR')
+                pass
+
+            # Test for 202 response
+            try:
+                if len(obj_threads) == 0:
+                    if __name__ == '__main__':
+                        xbmc.log('ERROR 99')
+                        return 99
+                    else:
+                        xbmc.log('ERROR 3')
+                        return 3
+
+                self.article = obj_threads.thread.subject.cdata
+                self.total_articles = obj_threads.thread['numarticles']
+
+                for i in range(len(obj_threads.thread.articles)):
+                    _article_dict = self.__build_article_dict(obj_threads.thread.articles.article[i])
+                    self.articles.append(_article_dict)
+
+            except AttributeError:
+                # 202 Response produces AttributeError -- 202 is common on your first call to a given username in a day
+                if __name__ == '__main__':
+                    xbmc.log('ATTR ERROR 3')
+                    time.sleep(3)
+                    continue
+                else:
+                    xbmc.log('ERROR 2')
+                    return 2
+
+
             break

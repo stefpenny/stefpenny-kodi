@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<window>
+	<views>50</views>
+	<controls>
+		<!-- MAIN BACKGROUND -->
+		<control type="image">
+			<left>0</left>
+			<top>0</top>
+			<width>1920</width>
+			<height>1200</height>
+			<texture colordiffuse="50FFFFFF">fanart.jpg</texture>
+			<aspectratio scalediffuse="false" align="left" aligny="top">stretch</aspectratio>
+		</control>
+		<control type="label">
+			<left>20</left>
+			<top>30</top>
+			<height>25</height>
+			<width>1000</width>
+			<font>font12</font>
+			<textcolor>FFFFFFFF</textcolor>
+			<label>$INFO[Window.Property(Article)]</label>
+		</control>
+		<control type="label">
+			<left>100</left>
+			<top>80</top>
+			<height>25</height>
+			<width>250</width>
+			<font>font20_title</font>
+			<align>left</align>
+			<textcolor>FFFFFFFF</textcolor>
+			<label>[I]$INFO[Window.Property(Pagecount)][/I]</label>
+		</control>
+		<control type="list" id="50">
+			<left>100</left>
+			<top>120</top>
+			<width>1720</width>
+			<height>900</height>
+			<onleft>9000</onleft>
+			<onright>60</onright>
+			<onup>52</onup>
+			<ondown>52</ondown>
+			<pagecontrol>60</pagecontrol>
+			<itemlayout height="250" width="1720">
+				<control type="image">
+					<left>10</left>
+					<top>10</top>
+					<width>24</width>
+					<height>24</height>
+					<texture>$INFO[ListItem.Icon]</texture>
+				</control>
+				<control type="textbox">
+					<left>50</left>
+					<top>0</top>
+					<height>250</height>
+					<width>1400</width>
+					<font>font10</font>
+					<textcolor>FFFFFFFF</textcolor>
+					<pagecontrol>17</pagecontrol>
+					<scrolltime>200</scrolltime>
+					<autoscroll delay="3000" time="1500" repeat="10000">!Control.HasFocus(17)</autoscroll>
+					<label>$INFO[ListItem.Label]</label>
+				</control>
+				<control type="label">
+					<left>1450</left>
+					<top>5</top>
+					<height>22</height>
+					<width>200</width>
+					<font>font10</font>
+					<textcolor>FF606060</textcolor>
+					<label>$INFO[ListItem.Property(author)]</label>
+				</control>
+				<control type="label">
+					<left>1650</left>
+					<top>5</top>
+					<height>22</height>
+					<width>200</width>
+					<font>font10</font>
+					<textcolor>FF606060</textcolor>
+					<label>$INFO[ListItem.Property(date)]</label>
+				</control>
+				<control type="image">
+					<left>0</left>
+					<top>249</top>
+					<width>1720</width>
+					<height>1</height>
+					<texture colordiffuse="50FFFFFF">$INFO[Window.Property(LineSepH)]</texture>
+					<aspectratio scalediffuse="false" align="left" aligny="top">stretch</aspectratio>
+				</control>
+			</itemlayout>
+			<focusedlayout height="250" width="1720">
+				<control type="image">
+					<left>10</left>
+					<top>10</top>
+					<width>24</width>
+					<height>24</height>
+					<texture>$INFO[ListItem.Icon]</texture>
+				</control>
+				<control type="textbox">
+					<left>50</left>
+					<top>0</top>
+					<height>250</height>
+					<width>1400</width>
+					<font>font10</font>
+					<textcolor>FFFFFFFF</textcolor>
+					<pagecontrol>17</pagecontrol>
+					<scrolltime>200</scrolltime>
+					<autoscroll delay="3000" time="1500" repeat="10000">!Control.HasFocus(17)</autoscroll>
+					<label>$INFO[ListItem.Label]</label>
+				</control>
+				<control type="label">
+					<left>1450</left>
+					<top>5</top>
+					<height>22</height>
+					<width>200</width>
+					<font>font10</font>
+					<textcolor>FF606060</textcolor>
+					<label>$INFO[ListItem.Property(author)]</label>
+				</control>
+				<control type="label">
+					<left>1650</left>
+					<top>5</top>
+					<height>22</height>
+					<width>200</width>
+					<font>font10</font>
+					<textcolor>FF606060</textcolor>
+					<label>$INFO[ListItem.Property(date)]</label>
+				</control>
+				<control type="image">
+					<left>0</left>
+					<top>249</top>
+					<width>1720</width>
+					<height>1</height>
+					<texture colordiffuse="50FFFFFF">$INFO[Window.Property(LineSepH)]</texture>
+					<aspectratio scalediffuse="false" align="left" aligny="top">stretch</aspectratio>
+				</control>
+				<control type="image">
+					<left>0</left>
+					<top>0</top>
+					<width>1720</width>
+					<height>250</height>
+					<aspectratio scalediffuse="false" align="left" aligny="top">stretch</aspectratio>
+					<texture>list-overlay.png</texture>
+				</control>
+			</focusedlayout>
+		</control>
+	</controls>
+</window>
